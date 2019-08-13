@@ -133,24 +133,24 @@ class dh:
         * filter_df: The dataframe constructed after all filters are applied
         '''
 
-
+        df = self.df.copy()
         inter_list = list([state_forces, rebel_groups, political_militias, identity_militias, rioters, protestors, civilian, other_forces])
         inter = [i+1 for i in range(0, len(inter_list)) if inter_list[i] == True]
         if sum(inter) == 0:
             inter = list(range(1,9))
 
         if country == None:
-            country = list(self.df.country.value_counts().to_dict().keys())
+            country = list(df.country.value_counts().to_dict().keys())
         if year == None:
-            year = list(self.df.year.value_counts().to_dict().keys())
+            year = list(df.year.value_counts().to_dict().keys())
         if region == None:
-            region = list(self.df.region.value_counts().to_dict().keys())
+            region = list(df.region.value_counts().to_dict().keys())
         if event_type == None:
-            event_type = list(self.df.event_type.value_counts().to_dict().keys())
+            event_type = list(df.event_type.value_counts().to_dict().keys())
 
-        filter_df = self.df[(self.df['country'].isin(country)) & (self.df['year'].isin(year)) &
-                            (self.df['region'].isin(region)) & (self.df['event_type'].isin(event_type)) &
-                            ((self.df['inter1'].isin(inter)) | (self.df['inter2'].isin(inter)))]
+        filter_df = df[(df['country'].isin(country)) & (df['year'].isin(year)) &
+                            (df['region'].isin(region)) & (df['event_type'].isin(event_type)) &
+                            ((df['inter1'].isin(inter)) | (df['inter2'].isin(inter)))]
 
         remover_value = len(filter_df) * 0.8
 
@@ -161,10 +161,12 @@ class dh:
 
         filter_df.fillna('No actor 2', inplace = True)
         filter_df.reset_index(drop=True, inplace=True)
-        if actor_name == None:
-            filter_df = self.organize_actors(filter_df)
+        if actor_name == None and sum(inter_list) == 0:
+            return filter_df
+        elif actor_name == None and sum(inter_list) != 0:
+            filter_df = self.organize_actors(filter_df.copy())
         else:
-            filter_df = self.organize_actors(filter_df, actor_name = actor_name)
+            filter_df = self.organize_actors(filter_df.copy(), actor_name = actor_name)
         return filter_df
 
 
@@ -376,7 +378,7 @@ class dh:
         if normalize:
             cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
-        fig, ax = plt.subplots(figsize = (12,8))
+        fig, ax = plt.subplots(figsize = (20,10))
         im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
         ax.figure.colorbar(im, ax=ax)
         # We want to show all ticks...
@@ -445,7 +447,7 @@ class dh:
         df_graphing = df[df.year > 2016]
         df_graphing.year.value_counts()
 
-        if type == 'country':
+        if type == 'country_stacked':
             country_list = list(df_graphing.country.value_counts().to_dict().keys())
             country_list
 
@@ -456,11 +458,18 @@ class dh:
             for country in country_list:
                 fatalities.append(df_graphing[df_graphing['country'] == country].fatalities.sum())
 
+            #Create alpha_3 country code for countries that have it so it can fit easily on the x axis
+            countries = {}
+            for country in pycountry.countries:
+                countries[country.name] = country.alpha_3
+            codes = [countries.get(country, 'Unknown code') for country in country_list]
+            country_list = [country_list[i] if codes[i] == 'Unknown code' else codes[i] for i in range(0,len(country_list))]
+
             graphing_df = pd.DataFrame({'country': country_list,
                                         'number_of_crisis': crisis,
                                         'fatalities': fatalities})
 
-            plt.figure(figsize = (12,8))
+            plt.figure(figsize = (20,10))
             index = np.arange(len(graphing_df.country))
             p1 = plt.bar(graphing_df.country, graphing_df.fatalities, width = 0.42)
             p2 = plt.bar(graphing_df.country, graphing_df.number_of_crisis, width = 0.42)
@@ -474,7 +483,46 @@ class dh:
 
             plt.show()
 
-        elif type == 'event':
+        elif type == 'country_paired':
+            country_list = list(df_graphing.country.value_counts().to_dict().keys())
+            country_list
+
+            crisis = list(df_graphing.country.value_counts().to_dict().values())
+            crisis
+
+            fatalities= []
+            for country in country_list:
+                fatalities.append(df_graphing[df_graphing['country'] == country].fatalities.sum())
+
+            #Create alpha_3 country code for countries that have it so it can fit easily on the x axis
+            countries = {}
+            for country in pycountry.countries:
+                countries[country.name] = country.alpha_3
+            codes = [countries.get(country, 'Unknown code') for country in country_list]
+            country_list = [country_list[i] if codes[i] == 'Unknown code' else codes[i] for i in range(0,len(country_list))]
+
+            graphing_df = pd.DataFrame({'country': country_list,
+                                        'number_of_crisis': crisis,
+                                        'fatalities': fatalities})
+
+            x = np.arange(len(country_list))
+            width = 0.35
+
+            fig, ax = plt.subplots(figsize = (20,10))
+            rects1 = ax.bar(x - width/2, graphing_df.fatalities, width, label='Fatalities')
+            rects2 = ax.bar(x + width/2, graphing_df.number_of_crisis, width, label='Number of Crisis')
+
+            # Add some text for labels, title and custom x-axis tick labels, etc.
+            ax.set_ylabel('Numbers')
+            ax.set_title('Crisis to Fatalities per Country [2017-2019]')
+            ax.set_xticks(x)
+            ax.set_xticklabels(country_list)
+            ax.legend()
+            fig.tight_layout()
+
+            plt.show()
+
+        elif type == 'event_stacked':
 
             event_list = list(df_graphing.event_type.value_counts().to_dict().keys())
             event_list
@@ -490,7 +538,7 @@ class dh:
                                         'number_of_crisis': crisis,
                                         'fatalities': fatalities})
 
-            plt.figure(figsize = (12,8))
+            plt.figure(figsize = (20,10))
             index = np.arange(len(graphing_df.event))
             p1 = plt.bar(graphing_df.event, graphing_df.fatalities, width = 0.42)
             p2 = plt.bar(graphing_df.event, graphing_df.number_of_crisis, width = 0.42)
@@ -501,6 +549,39 @@ class dh:
             plt.xticks(index, graphing_df.event, fontsize=10, rotation=28)
             plt.title('Crisis to Fatalities per Event Type [2017-2019]')
             plt.legend((p1[0], p2[0]), ('Fatalities', 'Crisis'))
+
+            plt.show()
+
+        elif type == 'event_paired':
+
+            event_list = list(df_graphing.event_type.value_counts().to_dict().keys())
+            event_list
+
+            crisis = list(df_graphing.event_type.value_counts().to_dict().values())
+            crisis
+
+            fatalities= []
+            for event in event_list:
+                fatalities.append(df_graphing[df_graphing['event_type'] == event].fatalities.sum())
+
+            graphing_df = pd.DataFrame({'event': event_list,
+                                        'number_of_crisis': crisis,
+                                        'fatalities': fatalities})
+
+            x = np.arange(len(event_list))
+            width = 0.35
+
+            fig, ax = plt.subplots(figsize = (20,10))
+            rects1 = ax.bar(x - width/2, graphing_df.fatalities, width, label='Fatalities')
+            rects2 = ax.bar(x + width/2, graphing_df.number_of_crisis, width, label='Number of Crisis')
+
+            # Add some text for labels, title and custom x-axis tick labels, etc.
+            ax.set_ylabel('Numbers')
+            ax.set_title('Crisis to Fatalities per Event Type [2017-2019]')
+            ax.set_xticks(x)
+            ax.set_xticklabels(event_list)
+            ax.legend()
+            fig.tight_layout()
 
             plt.show()
 

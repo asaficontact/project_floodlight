@@ -438,8 +438,10 @@ class dh:
         Parameters:
         * df: dataframe used in classification model generation (Required)
         * type:
-        'country' - create crisis_to_fatalities_graph per country /
-        'event' - create crisis_to_fatalities_graph per event /
+        'country_stacked' - create stacked crisis_to_fatalities_graph per country barplot /
+        'event_stacked' - create stacked crisis_to_fatalities_graph per event barplot /
+        'country_paired' - create paired crisis_to_fatalities_graph per country barplot /
+        'event_paired' - create paired crisis_to_fatalities_graph per event barplot /
         'crisis map' - plot all crisis on a map (Default: 'country')
         '''
 

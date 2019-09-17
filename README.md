@@ -1,29 +1,412 @@
-# Mod_5_Project
 
-* Inorder to run the code on your computer you will need to have the data and best_randomForest_models folders downloaded.
+## NOTE
+#### Original files for the project exceed GitHub's maximum file size limit. Click on the link below to access complete code and data files for the project
 
-* I was not able to upload them to github because of file size limit.
+LINK: https://drive.google.com/open?id=17rMuC6UW2KR5iVxQnc_BNP-lqTZmxQCF
 
-* Please refer to the following link for complete files of Mod_5_Project: https://drive.google.com/open?id=17rMuC6UW2KR5iVxQnc_BNP-lqTZmxQCF
+## Initial Setup
 
-* You can download the folder from the link above and start using the dataHandler class to handle crisis data and develop your own models.
 
-* You donot need to pass any parameters to initilize the dataHandler class.
+```python
+#Do all necessary Pacakge Imports
+from imports import *
+```
 
-* You will need the data folder to run dataHandler class as it imports the complete dataset from it.
 
-* The dataHandler class has the following functions:
+```python
+#Create a dataHandler class for our dataframe 
+data = dh()
+```
 
-* filter_data: This class can be used to filter through the complete dataset based on any variable of interest. It takes in values such as country, region, year etc to filter the complete data set against. It returns a dataFrame after all the filters has been applied. 
 
-* random_forest: It takes in the dataframe you want to create the random forest model for. It also takes in random_forest parameters that you might want to set while creating the model. If no parameters for random forest model are passed, it will automatically do a grid search to find the best set of parameters for the model. It also takes an optional parameter model_name, which you should pass if you want to save your model after being constructed. All random forest models are saved in the best_randomForest_models folder. While saving a model "_model.sav" is automatically added to the end of the saved file name.
+```python
+#Get Data for crisis in asia and southern asia
+southern_asia_df = data.filter_data(region=['Southern Asia', 'South-Eastern Asia'])
+asia_df = data.filter_data(region=['Middle East', 'Southern Asia', 'South-Eastern Asia'])
 
-* xgboost: It takes in the dataframe you want to create the XGBoost model for.It also takes in XGBoost parameters that you might want to set while creating the model. If no parameters for XGBoost are passed, it will run XGBoost on standard parameters set by sklearn. It also takes an optional parameter model_name, which you should pass if you want to save your model after being constructed. All random forest models are saved in the xgBoost_models folder. While saving a model "_model.sav" is automatically added to the end of the saved file name.
+#Get Data for crisis in asia and southern asia caused by rebel groups
+asia_rebel_groups_df = data.filter_data(region=['Middle East', 'Southern Asia', 'South-Eastern Asia'], rebel_groups=True)
+southern_asia_rebel_groups_df = data.filter_data(region=['Southern Asia'], rebel_groups=True)
+```
 
-* classifier_accuracy: It takes the dataframe for which a classification model was constructed and the classification model as parameters. It returns the Accuracy Score, F1 Score, Preceision, and Recall for training and testing data in form of a dictionary. Not the dataset is split into 75% training data and 25% testing data.
+## Predictors of Interest
 
-* plot_confusion_matrix: It takes the dataframe for which a classification model was constructed and the classification model as parameters. It also takes in dataset_type, which if set to 'train' will return confusion matrix for training dataset and if set to 'test' it will return confusion matrix for testing dataset. Normalizate parameter can be set to true if the results of confusion matrix needs to be normalized. It also takes an optional parameter for the title of the confusion matrix. It plots the confusion matrix for the classification model created.
+#### 1: Fatalities
+#### 2: Event Type
+#### 3: Sub Event Type
+#### 4: Associate Actor 1 
+#### 5: Actor 2 
+#### 6: Inter 2
+#### 7: Interaction
+#### 8: Region
+#### 9: Admin 1
+#### 10: Admin 2
+#### 11: Admin 3
+#### 12: Location
+#### 13: Associate Actor 2
+#### 14: Country
 
-* load_model: It takes the model_name and model_type inorder to load a model already constructed and saved. Model_type should be set to 'rf' if a random forest needs to be loaded and 'xgb' if a XGBoost model needs to be loaded. In model name you donot need to add '_model.sav' as it is automatically added to it by the function.
+NOTE: To better understand the predictors look at documentation in Understanding_data folder.
 
-* crisis_to_fatalities: It takes in the dataframe for which the crisis to fatatilies graph needs to be constructed. It takes in a 'type' parameter that describes the type of graph that needs to be constructed. If type is set to 'country_stacked', it will return stacked crisis to fataility per country bar plot and if type is set to 'country_paired', it will return a paired crisis to fatility per country bar plot. Likewise, if it is set to 'event_stacked', it will return stacked crisis to fataility per event barplot, and if set to 'event_paired', it will return paired crisis to fataility per event barplot. Finally if type is set to 'crisis map' it will plot the number of crisis on a map.
+## Types of Actors involved in Crisis Dataset
+
+#### 1: State Forces
+#### 2: Rebel Groups
+#### 3: Political Militias
+#### 4: Identity Militias
+#### 5: Rioters
+#### 6: Protestors
+#### 7: Civilian
+#### 8: External/Other Forces
+
+## Crisis Data Initial Exploration for Asia
+
+##### Crisis to Fatalities per Country caused by All Actors[2017-2019]
+
+
+```python
+data.crisis_to_fatalities_graph(asia_df, 'country_paired')
+```
+
+
+![png](README_files/main_13_0.png)
+
+
+##### Number of Crisis caused by all Actors per Country[2017-2019]
+
+
+```python
+data.crisis_to_fatalities_graph(asia_df, type='crisis map')
+```
+
+
+![png](README_files/main_15_0.png)
+
+
+##### Crisis to Fatalities per Country caused by Rebel Groups[2017-2019]
+
+
+```python
+data.crisis_to_fatalities_graph(asia_rebel_groups_df, 'country_paired')
+```
+
+
+![png](README_files/main_17_0.png)
+
+
+##### Number of Crisis caused by Rebel Groups per Country[2017-2019]
+
+
+```python
+data.crisis_to_fatalities_graph(asia_rebel_groups_df, type='crisis map')
+```
+
+
+![png](README_files/main_19_0.png)
+
+
+##### Crisis to Fatalities per Event Type caused by All Actors[2017-2019]
+
+
+```python
+data.crisis_to_fatalities_graph(asia_df, type='event_paired')
+```
+
+
+![png](README_files/main_21_0.png)
+
+
+##### Crisis to Fatalities per Country caused by Rebel Groups[2017-2019]
+
+
+```python
+data.crisis_to_fatalities_graph(asia_rebel_groups_df, type='event_paired')
+```
+
+
+![png](README_files/main_23_0.png)
+
+
+## Random Forest Model for Classifying Rebel Groups in Afghanistan
+
+##### Creating best random forest for Afghanistan by Grid Search
+
+
+```python
+#Get Data for crisis in Afghanistan caused by rebel groups
+afg_rebel_groups_df = data.filter_data(country=['Afghanistan'], rebel_groups=True)
+#Get Random Forest [the best parameters have been found using grid search]
+afg_rebel_groups_rf = data.random_forest(afg_rebel_groups_df, max_depth= 30, min_samples_leaf=1, min_samples_split = 10, n_estimators=500, model_name = 'afghanistan')
+```
+
+##### Load best Random Forest model based of grid search for Afghanistan
+
+
+```python
+asia_rebel_groups_rf = data.load_model('Afghanistan')
+```
+
+##### Confusion Matrix for Training Data [Normalized]
+
+
+
+```python
+data.plot_confusion_matrix(afg_rebel_groups_df, afg_rebel_groups_rf, dataset_type = 'train', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fab923ebe48>
+
+
+
+
+![png](README_files/main_30_1.png)
+
+
+##### Confusion Matrix for Testing Data [Normalized]
+
+
+```python
+data.plot_confusion_matrix(afg_rebel_groups_df, afg_rebel_groups_rf, dataset_type = 'test', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fab444f72b0>
+
+
+
+
+![png](README_files/main_32_1.png)
+
+
+##### Tests to check accuracy of the model
+
+
+```python
+data.classifier_accuracy(afg_rebel_groups_df, afg_rebel_groups_rf)
+```
+
+
+
+
+    {'training_accuracy': 0.8340914013428633,
+     'testing_accuracy': 0.8232618583495777,
+     'training_F1_weighted': 0.7805860368800424,
+     'testing_F1_weighted': 0.7674833570687929,
+     'training_precision_weighted': 0.8515754941098571,
+     'testing_precision_weighted': 0.8386940263095153,
+     'training_recall_weighted': 0.8340914013428633,
+     'testing_recall_weighted': 0.8232618583495777}
+
+
+
+## Random Forest Model for Classifying Rebel Groups in Southern Asia
+
+##### Load best Random Forest model based of grid search for Southern Asia
+
+
+```python
+southern_asia_rebel_groups_rf = data.load_model('southern_asia')
+```
+
+##### Confusion Matrix for Training Data [Normalized]
+
+
+```python
+data.plot_confusion_matrix(southern_asia_rebel_groups_df, southern_asia_rebel_groups_rf, dataset_type = 'train', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc528549f28>
+
+
+
+
+![png](README_files/main_39_1.png)
+
+
+##### Confusion Matrix for Testing Data [Normalized]
+
+
+```python
+data.plot_confusion_matrix(southern_asia_rebel_groups_df, southern_asia_rebel_groups_rf, dataset_type = 'test', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc528549ac8>
+
+
+
+
+![png](README_files/main_41_1.png)
+
+
+##### Tests to check accuracy of the model
+
+
+```python
+data.classifier_accuracy(southern_asia_rebel_groups_df, southern_asia_rebel_groups_rf)
+```
+
+
+
+
+    {'training_accuracy': 0.8423524022218405,
+     'testing_accuracy': 0.8268338773406632,
+     'training_F1_weighted': 0.7898185645638188,
+     'testing_F1_weighted': 0.7707830293459663,
+     'training_precision_weighted': 0.8712670574510711,
+     'testing_precision_weighted': 0.8306234964296919,
+     'training_recall_weighted': 0.8423524022218405,
+     'testing_recall_weighted': 0.8268338773406632}
+
+
+
+## Random Forest Model for Classifying Rebel Groups in Asia
+
+##### Load best Random Forest model based of grid search for Asia
+
+
+```python
+asia_rebel_groups_rf = data.load_model('asia')
+```
+
+##### Confusion Matrix for Training Data [Normalized]
+
+
+
+```python
+data.plot_confusion_matrix(asia_rebel_groups_df, asia_rebel_groups_rf, dataset_type = 'train', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc539b6a5c0>
+
+
+
+
+![png](README_files/main_48_1.png)
+
+
+##### Confusion Matrix for Testing Data [Normalized]
+
+
+```python
+data.plot_confusion_matrix(asia_rebel_groups_df, asia_rebel_groups_rf, dataset_type = 'test', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc549f98b00>
+
+
+
+
+![png](README_files/main_50_1.png)
+
+
+##### Tests to check accuracy of the model
+
+
+```python
+data.classifier_accuracy(asia_rebel_groups_df, asia_rebel_groups_rf)
+```
+
+
+
+
+    {'training_accuracy': 0.853942423468457,
+     'testing_accuracy': 0.84090411558669,
+     'training_F1_weighted': 0.8372359852046187,
+     'testing_F1_weighted': 0.8226387702490333,
+     'training_precision_weighted': 0.8441646669875207,
+     'testing_precision_weighted': 0.8279729962978163,
+     'training_recall_weighted': 0.853942423468457,
+     'testing_recall_weighted': 0.84090411558669}
+
+
+
+## Random Forest Model for Classifying Islamic State (Type of Rebel Group) in Asia
+
+Create Dataset for Islamic State classification
+
+
+```python
+isis_df = data.filter_data(region = ['Southern Asia', 'Middle East', 'South-Eastern Asia'], rebel_groups= True, actor_name= 'islamic state')
+```
+
+##### Load best Random Forest model based of grid search for ISIS activity in Asia
+
+
+```python
+isis_rf = data.load_model('isis')
+```
+
+##### Confusion Matrix for Training Data [Normalized]
+
+
+
+```python
+data.plot_confusion_matrix(isis_df, isis_rf, dataset_type = 'train', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fe8183ffe48>
+
+
+
+
+![png](README_files/main_59_1.png)
+
+
+##### Confusion Matrix for Testing Data [Normalized]
+
+
+```python
+data.plot_confusion_matrix(isis_df, isis_rf, dataset_type = 'test', normalize = True)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fe85d373588>
+
+
+
+
+![png](README_files/main_61_1.png)
+
+
+##### Tests to check accuracy of the model
+
+
+```python
+data.classifier_accuracy(isis_df, isis_rf)
+```
+
+
+
+
+    {'training_accuracy': 0.925958500276882,
+     'testing_accuracy': 0.9200664484291787,
+     'training_F1_weighted': 0.9238511827444541,
+     'testing_F1_weighted': 0.9177113406155695,
+     'training_precision_weighted': 0.9330340541392627,
+     'testing_precision_weighted': 0.9277676133005858,
+     'training_recall_weighted': 0.925958500276882,
+     'testing_recall_weighted': 0.9200664484291787}
+
+

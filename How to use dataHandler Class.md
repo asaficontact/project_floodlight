@@ -1,4 +1,4 @@
-# Mod_5_Project
+# How to use the dataHandler(dh) class. 
 
 * Inorder to run the code on your computer you will need to have the data and best_randomForest_models folders downloaded.
 

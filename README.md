@@ -1,6 +1,6 @@
 
 ## NOTE
-#### Original files for the project exceed GitHub's maximum file size limit. Please contact me to access complete code and data files for the project.
+#### Original files for the project exceed GitHub's maximum file size limit. Please contact me at asaficontact@gmail.com to access complete code and data files for the project.
 
 ## Initial Setup
 
